@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
+	"github.com/sirupsen/logrus"
 	"github.com/zaidanr/go-commander-bot/helper"
 	"github.com/zaidanr/go-commander-bot/message"
 	"go.mau.fi/whatsmeow"
@@ -45,13 +47,21 @@ func (cli *MyClient) SendMessage(evt interface{}, msg *string) {
 	cli.WAClient.SendMessage(v.Info.Sender, "", resp)
 }
 
+var ClientImpl MyClient
+var MsgLogger *logrus.Logger
+
 func (cli *MyClient) MessageHandler(evt interface{}) {
 	switch v := evt.(type) {
 	case *events.Message:
 		msg := *v.Message.GetExtendedTextMessage().Text
 
+		MsgLogger.WithField("From", v.Info.MessageSource.Sender.User).Info(msg)
+
+		msg = strings.ToLower(msg)
+
 		color.Green(msg)
 
+		// Check if commands is predefined in commands.csv
 		for i := range helper.AvailCmds {
 			if msg == helper.AvailCmds[i][0] {
 				cli.SendMessage(evt, &msg)
@@ -59,18 +69,24 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 			}
 		}
 
-		if msg == "/Halo" {
+		// Additional commands
+		switch msg {
+		case "/halo":
 			cli.SendMessage(evt, proto.String("Halo"))
-			return
+		case "/test":
+			cli.SendMessage(evt, proto.String("❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️"))
+			// color.Cyan(v.Info.MessageSource.SourceString())
+		default:
+			cli.SendMessage(evt, message.Help())
 		}
-
-		cli.SendMessage(evt, message.Help())
+		return
 	}
 }
 
-var ClientImpl MyClient
-
 func init() {
+	helper.AvailCmds = helper.ParseCommands()
+	MsgLogger = logrus.New()
+	MsgLogger.SetFormatter(&logrus.JSONFormatter{})
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
 	container, err := sqlstore.New("sqlite3", "file:commander.db?_foreign_keys=on", dbLog)
 	if err != nil {
@@ -81,6 +97,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
 	ClientImpl.newClient(deviceStore, clientLog)
 	ClientImpl.register()

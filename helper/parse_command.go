@@ -9,7 +9,7 @@ import (
 var AvailCmds [][]string
 
 func ParseCommands() [][]string {
-	f, err := os.Open("../config/commands.csv")
+	f, err := os.Open("./config/commands.csv")
 	if err != nil {
 		log.Fatal(err)
 	}

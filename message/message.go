@@ -1,8 +1,6 @@
 package message
 
 import (
-	_ "embed"
-
 	"github.com/zaidanr/go-commander-bot/helper"
 )
 

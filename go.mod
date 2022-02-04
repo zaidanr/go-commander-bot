@@ -10,6 +10,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.11 // indirect
 	github.com/mdp/qrterminal v1.0.1 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	go.mau.fi/libsignal v0.0.0-20211109153248-a67163214910 // indirect
 	go.mau.fi/whatsmeow v0.0.0-20220128124639-e64fb976bf15 // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
