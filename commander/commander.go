@@ -60,7 +60,6 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 		}
 
 		if msg == "/Halo" {
-			// color.Blue(t.Format(time.RFC3339))
 			cli.SendMessage(evt, proto.String("Halo"))
 			return
 		}
@@ -77,7 +76,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
+
 	deviceStore, err := container.GetFirstDevice()
 	if err != nil {
 		panic(err)
@@ -87,7 +86,7 @@ func init() {
 	ClientImpl.register()
 
 	if ClientImpl.WAClient.Store.ID == nil {
-		// No ID stored, new login
+
 		qrChan, _ := ClientImpl.WAClient.GetQRChannel(context.Background())
 		err = ClientImpl.WAClient.Connect()
 		if err != nil {
@@ -95,21 +94,15 @@ func init() {
 		}
 		for evt := range qrChan {
 			if evt.Event == "code" {
-				// Render the QR code here
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-				// or just manually `echo 2@... | qrencode -t ansiutf8` in a terminal
-				// fmt.Println("QR code:", evt.Code)
 			} else {
 				fmt.Println("Login event:", evt.Event)
 			}
 		}
 	} else {
-		// Already logged in, just connect
 		err = ClientImpl.WAClient.Connect()
 		if err != nil {
 			panic(err)
 		}
 	}
-
-	// Listen to Ctrl+C (you can also do something else that prevents the program from exiting)
 }

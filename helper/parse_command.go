@@ -9,7 +9,7 @@ import (
 var AvailCmds [][]string
 
 func ParseCommands() [][]string {
-	f, err := os.Open("./config/commands.csv")
+	f, err := os.Open("../config/commands.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,5 +22,5 @@ func ParseCommands() [][]string {
 		log.Fatal(err)
 	}
 
-	return AvailCmds
+	return AvailCmds[1:]
 }

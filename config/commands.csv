@@ -1,2 +1,6 @@
-/n1,nmap %s,Nmap Basic Scan
-/n2,nmap -sV -sC %s,Nmap Full Port Scan
+Command Prefix, Details, Description
+/n1,nmap %s,Nmap basic scan
+/n2,nmap -sV -sC %s,Nmap full port scan
+/nuclei,TODO,Run Nuclei scan
+/kr,kr,Kiterunner
+/recon,reconftw,Run recon
