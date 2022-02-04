@@ -1,0 +1,2 @@
+/n1,nmap %s,Nmap Basic Scan
+/n2,nmap -sV -sC %s,Nmap Full Port Scan
