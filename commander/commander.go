@@ -1,9 +1,12 @@
 package commander
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/fatih/color"
@@ -57,14 +60,32 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 
 		MsgLogger.WithField("From", v.Info.MessageSource.Sender.User).Info(msg)
 
-		msg = strings.ToLower(msg)
+		msg_arr := strings.Split(strings.ToLower(msg), " ")
 
 		color.Green(msg)
 
 		// Check if commands is predefined in commands.csv
 		for i := range helper.AvailCmds {
-			if msg == helper.AvailCmds[i][0] {
-				cli.SendMessage(evt, &msg)
+			if msg_arr[0] == helper.AvailCmds[i][0] {
+				var buf bytes.Buffer
+				ack := message.Ack(helper.AvailCmds[i][2])
+				cli.SendMessage(evt, ack)
+
+				// FIX COMMAND INJECTION
+				c := fmt.Sprintf(helper.AvailCmds[i][1], msg_arr[1])
+				c_arr := strings.Split(c, " ")
+
+				cmd := exec.Command(c_arr[0], c_arr[1:]...)
+				// cmd.Stdin = strings.NewReader("input")
+
+				cmd.Stdout = &buf
+				err := cmd.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
+				output := buf.String()
+				color.Blue(output)
+				cli.SendMessage(evt, &output)
 				return
 			}
 		}
@@ -74,7 +95,11 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 		case "/halo":
 			cli.SendMessage(evt, proto.String("Halo"))
 		case "/test":
-			cli.SendMessage(evt, proto.String("❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️"))
+			// cli.SendMessage(evt, proto.String("❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️"))
+			b, _ := exec.Command("whoami").Output()
+			out := string(b)
+			color.Blue(out)
+			cli.SendMessage(evt, &out)
 			// color.Cyan(v.Info.MessageSource.SourceString())
 		default:
 			cli.SendMessage(evt, message.Help())
@@ -87,6 +112,7 @@ func init() {
 	helper.AvailCmds = helper.ParseCommands()
 	MsgLogger = logrus.New()
 	MsgLogger.SetFormatter(&logrus.JSONFormatter{})
+
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
 	container, err := sqlstore.New("sqlite3", "file:commander.db?_foreign_keys=on", dbLog)
 	if err != nil {
@@ -103,12 +129,12 @@ func init() {
 	ClientImpl.register()
 
 	if ClientImpl.WAClient.Store.ID == nil {
-
 		qrChan, _ := ClientImpl.WAClient.GetQRChannel(context.Background())
 		err = ClientImpl.WAClient.Connect()
 		if err != nil {
 			panic(err)
 		}
+
 		for evt := range qrChan {
 			if evt.Event == "code" {
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
@@ -116,6 +142,7 @@ func init() {
 				fmt.Println("Login event:", evt.Event)
 			}
 		}
+
 	} else {
 		err = ClientImpl.WAClient.Connect()
 		if err != nil {
