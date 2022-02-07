@@ -51,14 +51,14 @@ func (cli *MyClient) SendMessage(evt interface{}, msg *string) {
 }
 
 var ClientImpl MyClient
-var MsgLogger *logrus.Logger
+var Log *logrus.Logger
 
 func (cli *MyClient) MessageHandler(evt interface{}) {
 	switch v := evt.(type) {
 	case *events.Message:
 		msg := *v.Message.GetExtendedTextMessage().Text
 
-		MsgLogger.WithField("From", v.Info.MessageSource.Sender.User).Info(msg)
+		Log.WithField("From", v.Info.MessageSource.Sender.User).Info(msg)
 
 		msg_arr := strings.Split(strings.ToLower(msg), " ")
 
@@ -76,7 +76,6 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 				c_arr := strings.Split(c, " ")
 
 				cmd := exec.Command(c_arr[0], c_arr[1:]...)
-				// cmd.Stdin = strings.NewReader("input")
 
 				cmd.Stdout = &buf
 				err := cmd.Run()
@@ -95,12 +94,10 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 		case "/halo":
 			cli.SendMessage(evt, proto.String("Halo"))
 		case "/test":
-			// cli.SendMessage(evt, proto.String("❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️\n❤️❤️❤️❤️❤️"))
 			b, _ := exec.Command("whoami").Output()
 			out := string(b)
 			color.Blue(out)
 			cli.SendMessage(evt, &out)
-			// color.Cyan(v.Info.MessageSource.SourceString())
 		default:
 			cli.SendMessage(evt, message.Help())
 		}
@@ -110,8 +107,8 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 
 func init() {
 	helper.AvailCmds = helper.ParseCommands()
-	MsgLogger = logrus.New()
-	MsgLogger.SetFormatter(&logrus.JSONFormatter{})
+	Log = logrus.New()
+	Log.SetFormatter(&logrus.JSONFormatter{})
 
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
 	container, err := sqlstore.New("sqlite3", "file:commander.db?_foreign_keys=on", dbLog)
