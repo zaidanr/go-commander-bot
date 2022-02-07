@@ -13,6 +13,7 @@ var (
 	UnknownCommand = "Maaf command tidak dikenali."
 	HelpMessage    = "*CommanderBot " + version + "*" + "\n\nAvailable Commands:"
 	Yasss          = "Running *%s* on your command. Please wait.."
+	JgnBang        = "Jangan di hek bang, takut 🤕"
 )
 
 func Help() *string {

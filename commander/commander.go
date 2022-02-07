@@ -62,7 +62,10 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 
 		msg_arr := strings.Split(strings.ToLower(msg), " ")
 
-		color.Green(msg)
+		if !helper.Validate(msg_arr[1]) {
+			cli.SendMessage(evt, &message.JgnBang)
+			return
+		}
 
 		// Check if commands is predefined in commands.csv
 		for i := range helper.AvailCmds {
@@ -71,20 +74,18 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 				ack := message.Ack(helper.AvailCmds[i][2])
 				cli.SendMessage(evt, ack)
 
-				// FIX COMMAND INJECTION
 				c := fmt.Sprintf(helper.AvailCmds[i][1], msg_arr[1])
 				c_arr := strings.Split(c, " ")
 
 				cmd := exec.Command(c_arr[0], c_arr[1:]...)
-
 				cmd.Stdout = &buf
 				err := cmd.Run()
 				if err != nil {
 					log.Fatal(err)
 				}
-				output := buf.String()
-				color.Blue(output)
-				cli.SendMessage(evt, &output)
+				out := buf.String()
+
+				cli.SendMessage(evt, &out)
 				return
 			}
 		}
