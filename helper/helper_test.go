@@ -77,10 +77,4 @@ func TestValidateTable(t *testing.T) {
 			assert.Equal(t, test.expected, result)
 		})
 	}
-
-	// fmt.Println("H")
-}
-
-func TestValidate(t *testing.T) {
-	fmt.Printf("%t\n", Validate("google.com"))
 }

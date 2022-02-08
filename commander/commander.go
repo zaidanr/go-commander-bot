@@ -62,9 +62,11 @@ func (cli *MyClient) MessageHandler(evt interface{}) {
 
 		msg_arr := strings.Split(strings.ToLower(msg), " ")
 
-		if !helper.Validate(msg_arr[1]) {
-			cli.SendMessage(evt, &message.JgnBang)
-			return
+		if len(msg_arr) > 0 {
+			if !helper.Validate(msg_arr[1]) {
+				cli.SendMessage(evt, &message.JgnBang)
+				return
+			}
 		}
 
 		// Check if commands is predefined in commands.csv
